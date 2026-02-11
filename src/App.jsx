@@ -211,6 +211,7 @@ function App() {
   const [toast, setToast] = useState('');
   const [celebratingTaskId, setCelebratingTaskId] = useState('');
   const [celebrationMessage, setCelebrationMessage] = useState('');
+  const [expandedTaskId, setExpandedTaskId] = useState('');
   const finishGuardRef = useRef('');
   const listPanelRef = useRef(null);
 
@@ -468,6 +469,7 @@ function App() {
     setTasks([]);
     setCelebratingTaskId('');
     setCelebrationMessage('');
+    setExpandedTaskId('');
     resetForm();
     setToast('All tasks reset.');
     localStorage.removeItem(STORAGE_KEYS.tasks);
@@ -480,10 +482,15 @@ function App() {
     }
 
     setTasks((previousTasks) => previousTasks.filter((task) => task.id !== taskId));
+    if (expandedTaskId === taskId) setExpandedTaskId('');
 
     if (editingTaskId === taskId) {
       resetForm();
     }
+  };
+
+  const toggleTaskExpand = (taskId) => {
+    setExpandedTaskId((currentExpandedTaskId) => (currentExpandedTaskId === taskId ? '' : taskId));
   };
 
   const editTask = (task) => {
@@ -827,8 +834,10 @@ function App() {
                   task={task}
                   remaining={remaining}
                   isRunning={isRunning}
+                  isExpanded={expandedTaskId === task.id}
                   celebrating={celebratingTaskId === task.id}
                   onToggleComplete={toggleTaskComplete}
+                  onToggleExpand={toggleTaskExpand}
                   onToggleTimer={toggleTimer}
                   onResetTimer={resetTimer}
                   onEdit={editTask}
@@ -851,8 +860,10 @@ function App() {
                   task={task}
                   remaining={0}
                   isRunning={false}
+                  isExpanded={expandedTaskId === task.id}
                   celebrating={celebratingTaskId === task.id}
                   onToggleComplete={toggleTaskComplete}
+                  onToggleExpand={toggleTaskExpand}
                   onToggleTimer={toggleTimer}
                   onResetTimer={resetTimer}
                   onEdit={editTask}
@@ -899,8 +910,10 @@ function TaskRow({
   task,
   remaining,
   isRunning,
+  isExpanded,
   celebrating,
   onToggleComplete,
+  onToggleExpand,
   onToggleTimer,
   onResetTimer,
   onEdit,
@@ -982,8 +995,16 @@ function TaskRow({
         <span className={`difficulty-pill ${task.difficulty.toLowerCase()}`}>{task.difficulty}</span>
       </div>
 
-      <div className="task-cell task-name" data-label="Task">
-        {task.taskName}
+      <div className="task-cell task-name-cell" data-label="Task">
+        <button
+          type="button"
+          className={`task-name ${isExpanded ? 'expanded' : ''}`}
+          aria-expanded={isExpanded}
+          onClick={() => onToggleExpand(task.id)}
+          title={isExpanded ? 'Click to collapse' : 'Click to view full task'}
+        >
+          {task.taskName}
+        </button>
       </div>
 
       <div className="task-cell" data-label="Order">
